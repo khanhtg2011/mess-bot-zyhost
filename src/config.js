@@ -10,6 +10,7 @@ if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
 const defaultData = {
   threads: {},   // threadID -> { welcome: true, antispam: false, autoreply: { keyword: reply } }
   scores: {},    // userID -> { coins: 1000, name: '' }
+  personas: {},  // userID -> custom system prompt string
 };
 
 function loadData() {
@@ -56,6 +57,26 @@ function addUserCoins(userID, delta) {
   return store.scores[userID].coins;
 }
 
+const DEFAULT_SYSTEM_PROMPT =
+  process.env.AI_SYSTEM_PROMPT ||
+  'Bạn là trợ lý Messenger, trả lời ngắn gọn bằng tiếng Việt, thân thiện, tối đa 3-4 câu.';
+
+function getUserPersona(userID) {
+  if (!store.personas) store.personas = {};
+  return store.personas[String(userID)] || DEFAULT_SYSTEM_PROMPT;
+}
+
+function setUserPersona(userID, prompt) {
+  if (!store.personas) store.personas = {};
+  const uid = String(userID);
+  if (!prompt) {
+    delete store.personas[uid];
+  } else {
+    store.personas[uid] = prompt;
+  }
+  saveData();
+}
+
 const geminiKeysRaw = process.env.GEMINI_API_KEYS || process.env.GEMINI_API_KEY || '';
 const GEMINI_API_KEYS = geminiKeysRaw
   .split(',')
@@ -82,4 +103,7 @@ module.exports = {
   saveData,
   getUserCoins,
   addUserCoins,
+  DEFAULT_SYSTEM_PROMPT,
+  getUserPersona,
+  setUserPersona,
 };

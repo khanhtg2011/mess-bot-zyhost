@@ -2,10 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const login = require('ws3-fca');
 const OTPAuth = require('otpauth');
-const { PREFIX, AUTO_DOWNLOAD, FB_EMAIL, FB_PASSWORD, FB_2FA_SECRET, getThreadConfig } = require('./src/config');
+const { PREFIX, AUTO_DOWNLOAD, FB_EMAIL, FB_PASSWORD, FB_2FA_SECRET, getThreadConfig, getUserPersona } = require('./src/config');
 const { sweepOldTempFiles } = require('./src/utils/tempCleaner');
 
-const { callModelAPI, handleAI, handleSummary } = require('./src/commands/ai');
+const { callModelAPI, handlePersona, handleAI, handleSummary } = require('./src/commands/ai');
 const { handleDownload, handleTTS } = require('./src/commands/media');
 const { handleKick, handleTagAll, handleSplitTeam, handleChoose, handleToggleSetting, handleAutoReply } = require('./src/commands/group');
 const { handleReminder, handleServerStatus, handleHelp } = require('./src/commands/utility');
@@ -252,6 +252,9 @@ function startBot() {
           case 'ai':
           case 'ask':
             return handleAI(api, event, args);
+          case 'persona':
+          case 'tinhcach':
+            return handlePersona(api, event, args);
           case 'tomtat':
           case 'summary':
             return handleSummary(api, event, messageHistory);
@@ -314,9 +317,10 @@ function startBot() {
         }
       }
 
-      // 5. Meta Model API auto-reply for new messages when MODEL_API_KEY is configured
+      // 5. Meta Model API auto-reply with per-user customizable system prompt
       if (process.env.MODEL_API_KEY && process.env.MODEL_API_KEY.trim()) {
-        const replyText = await callModelAPI(body, messageHistory.get(event.threadID) || []);
+        const persona = getUserPersona(event.senderID);
+        const replyText = await callModelAPI(body, messageHistory.get(event.threadID) || [], persona);
         api.sendMessage(replyText, event.threadID, event.messageID);
       }
     } catch (e) {

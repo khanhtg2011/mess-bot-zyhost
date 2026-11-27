@@ -7,7 +7,11 @@ const {
   OPENAI_API_KEY,
   OPENAI_BASE_URL,
   OPENAI_MODEL,
+  DEFAULT_SYSTEM_PROMPT,
+  getUserPersona,
+  setUserPersona,
 } = require('../config');
+const { isGroupOrBotAdmin } = require('./group');
 
 let geminiIdx = 0;
 
@@ -45,9 +49,14 @@ async function callOpenAICompatible(baseUrl, apiKey, model, textPrompt) {
   return text.trim();
 }
 
-const META_SYSTEM_PROMPT = 'Bạn là trợ lý Messenger, trả lời ngắn gọn bằng tiếng Việt, thân thiện, tối đa 3-4 câu.';
+const PERSONA_PRESETS = {
+  lay: 'Bạn là đứa bạn thân lầy lội, hay cà khịa hài hước nhưng vẫn có tâm, trả lời tiếng Việt ngắn gọn 2-4 câu.',
+  nghiemtuc: 'Bạn là trợ lý chuyên nghiệp, lịch sự, trả lời ngắn gọn, chính xác bằng tiếng Việt tối đa 3-4 câu.',
+  ngotngao: 'Bạn là người bạn dễ thương, nói chuyện nhẹ nhàng, ấm áp và hay dùng emoji, tối đa 3-4 câu tiếng Việt.',
+  wibu: 'Bạn là otaku/wibu chính hiệu, nói chuyện thân thiện pha chút văn phong anime đáng yêu, trả lời tiếng Việt 2-4 câu.',
+};
 
-async function callModelAPI(userText, history = []) {
+async function callModelAPI(userText, history = [], systemPrompt = DEFAULT_SYSTEM_PROMPT) {
   const apiKey = (process.env.MODEL_API_KEY || '').trim();
   if (!apiKey) {
     return 'Mình đang bận một chút, bạn nhắn lại giúp mình nhé.';
@@ -64,7 +73,7 @@ async function callModelAPI(userText, history = []) {
       {
         model: 'muse-spark-1.3',
         messages: [
-          { role: 'system', content: META_SYSTEM_PROMPT },
+          { role: 'system', content: systemPrompt || DEFAULT_SYSTEM_PROMPT },
           ...formattedHistory,
           { role: 'user', content: userText },
         ],
@@ -83,6 +92,38 @@ async function callModelAPI(userText, history = []) {
     console.error('[callModelAPI Error]', err.response?.data || err.message);
     return 'Mình đang bận một chút, bạn nhắn lại giúp mình nhé.';
   }
+}
+
+async function handlePersona(api, event, args) {
+  const input = args.join(' ').trim();
+  const replySender = event.messageReply?.senderID;
+  let targetID = event.senderID;
+
+  if (replySender && replySender !== event.senderID) {
+    if (!(await isGroupOrBotAdmin(api, event))) {
+      return api.sendMessage('⛔ Chỉ Quản trị viên mới được đổi tính cách AI cho người khác!', event.threadID, event.messageID);
+    }
+    targetID = replySender;
+  }
+
+  if (!input) {
+    const current = getUserPersona(targetID);
+    return api.sendMessage(
+      `🎭 **Tính cách AI hiện tại:**\n"${current}"\n\n💡 **Đổi tính cách:**\n• /persona <mô tả tính cách bất kỳ>\n• Preset nhanh: /persona lay | nghiemtuc | ngotngao | wibu\n• Khôi phục mặc định: /persona reset`,
+      event.threadID,
+      event.messageID
+    );
+  }
+
+  const lower = input.toLowerCase();
+  if (lower === 'reset' || lower === 'default') {
+    setUserPersona(targetID, null);
+    return api.sendMessage('🔄 Đã khôi phục tính cách AI về mặc định.', event.threadID, event.messageID);
+  }
+
+  const chosen = PERSONA_PRESETS[lower] || input;
+  setUserPersona(targetID, chosen);
+  return api.sendMessage(`✅ Đã cập nhật tính cách AI:\n"${chosen}"`, event.threadID, event.messageID);
 }
 
 async function callAI(parts, hasImage = false) {
@@ -178,4 +219,4 @@ async function handleSummary(api, event, messageHistory) {
   }
 }
 
-module.exports = { callModelAPI, handleAI, handleSummary };
+module.exports = { callModelAPI, handlePersona, handleAI, handleSummary };

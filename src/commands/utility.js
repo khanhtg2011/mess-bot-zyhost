@@ -60,6 +60,7 @@ function handleHelp(api, event) {
 • ${p}tai <link> : Tải video TikTok/Reels/Shorts không logo
 • ${p}tts <chữ> : Chuyển văn bản thành voice
 • ${p}ai <câu hỏi> : Hỏi AI (hoặc reply ảnh để đọc/dịch)
+• ${p}persona <tính cách> : Đổi tính cách AI riêng cho bạn (lay/nghiemtuc/ngotngao/wibu/reset)
 • ${p}tomtat : Tóm tắt tin nhắn gần nhất
 
 🛡️ **Quản trị nhóm (Chỉ QTV):**
