@@ -310,9 +310,9 @@ function startBot() {
         }
       }
 
-      // 3. Auto-detect TikTok / Reels / Shorts links
+      // 3. Auto-detect TikTok / Reels / Shorts / SoundCloud links
       if (AUTO_DOWNLOAD) {
-        const linkMatch = body.match(/https?:\/\/(?:vt\.tiktok\.com|www\.tiktok\.com|tiktok\.com|v\.douyin\.com|www\.instagram\.com\/reel|youtube\.com\/shorts|www\.facebook\.com\/reel)\S+/i);
+        const linkMatch = body.match(/https?:\/\/(?:vt\.tiktok\.com|vm\.tiktok\.com|www\.tiktok\.com|tiktok\.com|v\.douyin\.com|(?:www\.|m\.)?instagram\.com\/reels?|youtube\.com\/shorts|(?:www\.|m\.)?facebook\.com\/(?:reel|share\/r)|fb\.watch|(?:on\.)?soundcloud\.com)\S+/i);
         if (linkMatch) {
           return handleDownload(api, event, linkMatch[0]);
         }
