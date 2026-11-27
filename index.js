@@ -1,6 +1,7 @@
 const fs = require('fs');
 const path = require('path');
-const login = require('ws3-fca');
+const fca = require('ws3-fca');
+const login = typeof fca === 'function' ? fca : (fca.login || fca.default);
 const OTPAuth = require('otpauth');
 const { PREFIX, AUTO_DOWNLOAD, FB_EMAIL, FB_PASSWORD, FB_2FA_SECRET, getThreadConfig, getUserPersona } = require('./src/config');
 const { sweepOldTempFiles } = require('./src/utils/tempCleaner');
