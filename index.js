@@ -173,7 +173,12 @@ function scheduleReconnect(reason) {
 function startBot() {
   performLogin((err, api) => {
     if (err || !api) {
+      const errMsg = String(err?.error || err?.message || err || '');
       console.error('❌ Đăng nhập thất bại (hết hạn cookie hoặc bị checkpoint):', err);
+      if (/wrong password|checkpoint/i.test(errMsg)) {
+        console.error('🛑 Dừng tự động thử lại để tránh khóa tài khoản. Hãy kiểm tra lại FB_PASSWORD (bọc trong dấu "..." nếu có ký tự #) hoặc dùng file appstate.json!');
+        process.exit(1);
+      }
       if (FB_EMAIL && FB_PASSWORD) {
         return scheduleReconnect('login_failed');
       }
