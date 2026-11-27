@@ -69,23 +69,13 @@ function handleTaiXiu(api, event, args) {
     return api.sendMessage(`❌ Tiền cược không hợp lệ! Bạn đang có **${coins} xu**.`, event.threadID, event.messageID);
   }
 
-  let d1 = crypto.randomInt(1, 7);
-  let d2 = crypto.randomInt(1, 7);
-  let d3 = crypto.randomInt(1, 7);
-  let sum = d1 + d2 + d3;
-  let isTriple = d1 === d2 && d2 === d3;
-  let result = sum >= 11 ? 'tai' : 'xiu';
+  const d1 = crypto.randomInt(1, 7);
+  const d2 = crypto.randomInt(1, 7);
+  const d3 = crypto.randomInt(1, 7);
+  const sum = d1 + d2 + d3;
+  const isTriple = d1 === d2 && d2 === d3;
+  const result = sum >= 11 ? 'tai' : 'xiu';
   const userPick = choice.startsWith('t') ? 'tai' : 'xiu';
-
-  // Nhẹ tay chỉnh tỷ lệ nhà cái (~43% thắng, ~57% thua)
-  if (!isTriple && userPick === result && crypto.randomInt(0, 100) < 14) {
-    d1 = userPick === 'tai' ? crypto.randomInt(1, 3) : crypto.randomInt(5, 7);
-    d2 = userPick === 'tai' ? crypto.randomInt(1, 4) : crypto.randomInt(4, 7);
-    d3 = userPick === 'tai' ? crypto.randomInt(1, 4) : crypto.randomInt(4, 7);
-    sum = d1 + d2 + d3;
-    isTriple = d1 === d2 && d2 === d3;
-    result = sum >= 11 ? 'tai' : 'xiu';
-  }
 
   const won = !isTriple && userPick === result;
   const newBalance = addUserCoins(event.senderID, won ? bet : -bet);
