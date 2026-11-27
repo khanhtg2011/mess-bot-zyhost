@@ -317,10 +317,10 @@ function startBot() {
         }
       }
 
-      // 5. Meta Model API auto-reply with per-user customizable system prompt
+      // 5. Meta Model API auto-reply with per-user customizable system prompt & user name
       if (process.env.MODEL_API_KEY && process.env.MODEL_API_KEY.trim()) {
         const persona = getUserPersona(event.senderID);
-        const replyText = await callModelAPI(body, messageHistory.get(event.threadID) || [], persona);
+        const replyText = await callModelAPI(body, messageHistory.get(event.threadID) || [], persona, senderName);
         api.sendMessage(replyText, event.threadID, event.messageID);
       }
     } catch (e) {

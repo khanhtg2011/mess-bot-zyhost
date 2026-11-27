@@ -56,7 +56,7 @@ const PERSONA_PRESETS = {
   wibu: 'Bạn là otaku/wibu chính hiệu, nói chuyện thân thiện pha chút văn phong anime đáng yêu, trả lời tiếng Việt 2-4 câu.',
 };
 
-async function callModelAPI(userText, history = [], systemPrompt = DEFAULT_SYSTEM_PROMPT) {
+async function callModelAPI(userText, history = [], systemPrompt = DEFAULT_SYSTEM_PROMPT, senderName = '') {
   const apiKey = (process.env.MODEL_API_KEY || '').trim();
   if (!apiKey) {
     return 'Mình đang bận một chút, bạn nhắn lại giúp mình nhé.';
@@ -67,15 +67,20 @@ async function callModelAPI(userText, history = [], systemPrompt = DEFAULT_SYSTE
     return { role: 'user', content: `${m.senderName || 'User'}: ${m.body || ''}` };
   });
 
+  const basePrompt = systemPrompt || DEFAULT_SYSTEM_PROMPT;
+  const fullSystemPrompt = senderName
+    ? `${basePrompt}\nNgười đang nhắn với bạn tên là "${senderName}". Hãy xưng hô tự nhiên theo tên của họ.`
+    : basePrompt;
+
   try {
     const res = await axios.post(
       'https://api.meta.ai/v1/chat/completions',
       {
         model: 'muse-spark-1.3',
         messages: [
-          { role: 'system', content: systemPrompt || DEFAULT_SYSTEM_PROMPT },
+          { role: 'system', content: fullSystemPrompt },
           ...formattedHistory,
-          { role: 'user', content: userText },
+          { role: 'user', content: senderName ? `${senderName}: ${userText}` : userText },
         ],
       },
       {
