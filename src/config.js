@@ -98,6 +98,7 @@ module.exports = {
   OPENAI_MODEL: process.env.OPENAI_MODEL || 'gpt-4o-mini',
   AUTO_DOWNLOAD: (process.env.AUTO_DOWNLOAD || 'true').toLowerCase() === 'true',
   HAVEN_URL: process.env.HAVEN_URL || 'https://haven.khanhs.io.vn',
+  ALLOWED_THREAD_IDS: (process.env.ALLOWED_THREAD_IDS || '1687951535781687').split(',').map(s => s.trim()).filter(Boolean),
   ADMIN_UIDS: (process.env.ADMIN_UIDS || '').split(',').map(s => s.trim()).filter(Boolean),
   getThreadConfig,
   saveData,

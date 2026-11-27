@@ -3,7 +3,7 @@ const path = require('path');
 const fca = require('ws3-fca');
 const login = typeof fca === 'function' ? fca : (fca.login || fca.default);
 const OTPAuth = require('otpauth');
-const { PREFIX, AUTO_DOWNLOAD, FB_EMAIL, FB_PASSWORD, FB_2FA_SECRET, getThreadConfig, getUserPersona } = require('./src/config');
+const { PREFIX, AUTO_DOWNLOAD, FB_EMAIL, FB_PASSWORD, FB_2FA_SECRET, ALLOWED_THREAD_IDS, getThreadConfig, getUserPersona } = require('./src/config');
 const { sweepOldTempFiles } = require('./src/utils/tempCleaner');
 
 const { callModelAPI, handlePersona, handleAI, handleSummary } = require('./src/commands/ai');
@@ -212,6 +212,11 @@ function startBot() {
       if (!event) return;
 
     try {
+      // Only process events/messages from allowed thread IDs
+      if (ALLOWED_THREAD_IDS.length > 0 && !ALLOWED_THREAD_IDS.includes(String(event.threadID))) {
+        return;
+      }
+
       // 1. Welcome / Goodbye events
       if (event.type === 'event') {
         const cfg = getThreadConfig(event.threadID);
