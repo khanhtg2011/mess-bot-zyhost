@@ -84,17 +84,14 @@ async function handleDownload(api, event, rawUrl) {
       fileToSend = compFile;
     }
 
-    await new Promise((resolve, reject) => {
-      api.sendMessage(
-        {
-          body: `${isAudio ? '🎵' : '🎬'} ${title.slice(0, 120)}`,
-          attachment: fs.createReadStream(fileToSend),
-        },
-        event.threadID,
-        err => (err ? reject(err) : resolve()),
-        event.messageID
-      );
-    });
+    await api.sendMessage(
+      {
+        body: `${isAudio ? '🎵' : '🎬'} ${title.slice(0, 120)}`,
+        attachment: fs.createReadStream(fileToSend),
+      },
+      event.threadID,
+      event.messageID
+    );
   } catch (err) {
     api.sendMessage(`❌ Không tải được media: ${err.message}`, event.threadID, event.messageID);
   } finally {
@@ -115,14 +112,11 @@ async function handleTTS(api, event, args) {
     const res = await axios.get(url, { responseType: 'arraybuffer', timeout: 15000 });
     fs.writeFileSync(audioFile, Buffer.from(res.data));
 
-    await new Promise((resolve, reject) => {
-      api.sendMessage(
-        { attachment: fs.createReadStream(audioFile) },
-        event.threadID,
-        err => (err ? reject(err) : resolve()),
-        event.messageID
-      );
-    });
+    await api.sendMessage(
+      { attachment: fs.createReadStream(audioFile) },
+      event.threadID,
+      event.messageID
+    );
   } catch (err) {
     api.sendMessage(`❌ Lỗi TTS: ${err.message}`, event.threadID, event.messageID);
   } finally {
