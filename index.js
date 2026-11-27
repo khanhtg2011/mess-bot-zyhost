@@ -16,6 +16,7 @@ const APPSTATE_PATH = path.join(__dirname, 'appstate.json');
 const MAX_HISTORY = 150;
 const messageHistory = new Map(); // threadID -> [{ senderName, body }]
 const spamTracker = new Map();    // threadID:senderID -> [timestamps]
+const cmdCooldown = new Map();    // senderID -> lastCommandMs
 const userNameCache = new Map();  // userID -> name
 
 // Periodic temp cleanup every 5 minutes (protects Zyhost 1GB disk)
@@ -234,8 +235,16 @@ function startBot() {
       // Save for /tomtat
       recordHistory(event.threadID, senderName, body);
 
-      // 2. Command routing
+      // 2. Command routing (with 2.5s anti-spam cooldown + natural 700-1300ms delay)
       if (body.startsWith(PREFIX)) {
+        const nowMs = Date.now();
+        const lastCmd = cmdCooldown.get(event.senderID) || 0;
+        if (nowMs - lastCmd < 2500) {
+          return;
+        }
+        cmdCooldown.set(event.senderID, nowMs);
+        await new Promise(r => setTimeout(r, 700 + Math.floor(Math.random() * 600)));
+
         const parts = body.slice(PREFIX.length).trim().split(/\s+/);
         const cmd = (parts[0] || '').toLowerCase();
         const args = parts.slice(1);
