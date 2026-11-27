@@ -5,7 +5,7 @@ const OTPAuth = require('otpauth');
 
 const { getThreadConfig, getUserCoins, addUserCoins } = require('../src/config');
 const { TEMP_DIR, safeUnlink } = require('../src/utils/tempCleaner');
-const { handleKick, handleTagAll, handleSplitTeam, handleChoose, handleToggleSetting, handleAutoReply } = require('../src/commands/group');
+const { handleTagAll, handleSplitTeam, handleChoose, handleToggleSetting, handleAutoReply } = require('../src/commands/group');
 const { handleHelp, handleServerStatus } = require('../src/commands/utility');
 const { handleWordChain, handleTaiXiu, handleCoins } = require('../src/commands/games');
 
@@ -45,10 +45,6 @@ async function runTests() {
   const nonAdminEvt = { threadID: 't1', messageID: 'm1', senderID: 'user_2', mentions: { user_3: '@u3' } };
   const adminEvt = { threadID: 't1', messageID: 'm2', senderID: 'admin_1', mentions: { user_3: '@u3' } };
 
-  await handleKick(api, nonAdminEvt);
-  assert(api.sent.at(-1).includes('⛔'), 'Non-admin /kick must be blocked');
-  assert.strictEqual(api.kicked.length, 0);
-
   await handleTagAll(api, nonAdminEvt, ['hi']);
   assert(api.sent.at(-1).includes('⛔'), 'Non-admin /all must be blocked');
 
@@ -58,9 +54,9 @@ async function runTests() {
   await handleAutoReply(api, nonAdminEvt, ['add', 'hi', '|', 'hello']);
   assert(api.sent.at(-1).includes('⛔'), 'Non-admin /autoreply add must be blocked');
 
-  await handleKick(api, adminEvt);
-  assert.strictEqual(api.kicked[0], 'user_3', 'Group admin /kick must succeed');
-  console.log('[PASS] Admin-only permissions (/kick, /all, /antispam, /autoreply)');
+  await handleToggleSetting(api, adminEvt, 'welcome', ['on']);
+  assert(api.sent.at(-1).includes('✅'), 'Group admin /welcome must succeed');
+  console.log('[PASS] Admin-only permissions (/all, /antispam, /autoreply, /welcome)');
 
   // 3. Group utilities
   handleSplitTeam(api, nonAdminEvt, ['An,', 'Binh,', 'Chi,', 'Dung']);
@@ -87,7 +83,7 @@ async function runTests() {
 
   // 6. Help & Server status
   handleHelp(api, nonAdminEvt);
-  assert(api.sent.at(-1).includes('/kick'));
+  assert(api.sent.at(-1).includes('/all'));
   await handleServerStatus(api, nonAdminEvt);
   assert(api.sent.at(-1).includes('TRẠNG THÁI HỆ THỐNG'));
   console.log('[PASS] /help & /sv');

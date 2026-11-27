@@ -8,7 +8,7 @@ const { sweepOldTempFiles } = require('./src/utils/tempCleaner');
 
 const { callModelAPI, handlePersona, handleAI, handleSummary } = require('./src/commands/ai');
 const { handleDownload, handleTTS } = require('./src/commands/media');
-const { handleKick, handleTagAll, handleSplitTeam, handleChoose, handleToggleSetting, handleAutoReply } = require('./src/commands/group');
+const { handleTagAll, handleSplitTeam, handleChoose, handleToggleSetting, handleAutoReply } = require('./src/commands/group');
 const { handleReminder, handleServerStatus, handleHelp } = require('./src/commands/utility');
 const { handleWordChain, handleTaiXiu, handleCoins } = require('./src/commands/games');
 
@@ -54,19 +54,10 @@ function checkSpam(api, event) {
   times.push(now);
   spamTracker.set(key, times);
 
-  if (times.length === 5) {
-    api.sendMessage('⚠️ Cảnh báo: Vui lòng không spam tin nhắn liên tục!', event.threadID, event.messageID);
-    return true;
-  }
-  if (times.length >= 8) {
-    spamTracker.delete(key);
-    api.removeUserFromGroup(event.senderID, event.threadID, err => {
-      if (err) {
-        api.sendMessage('⚠️ Phát hiện spam nhưng bot chưa có quyền QTV để kick!', event.threadID);
-      } else {
-        api.sendMessage('🚫 Đã kick thành viên vì spam quá mức.', event.threadID);
-      }
-    });
+  if (times.length >= 5) {
+    if (times.length === 5 || times.length % 4 === 0) {
+      api.sendMessage('⚠️ Cảnh báo: Vui lòng không spam tin nhắn liên tục!', event.threadID, event.messageID);
+    }
     return true;
   }
   return false;
@@ -268,9 +259,6 @@ function startBot() {
           case 'tts':
           case 'noi':
             return handleTTS(api, event, args);
-          case 'kick':
-          case 'ban':
-            return handleKick(api, event);
           case 'all':
           case 'everyone':
             return handleTagAll(api, event, args);

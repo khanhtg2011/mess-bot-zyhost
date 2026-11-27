@@ -11,25 +11,6 @@ async function isGroupOrBotAdmin(api, event) {
   }
 }
 
-async function handleKick(api, event) {
-  if (!(await isGroupOrBotAdmin(api, event))) {
-    return api.sendMessage('⛔ Chỉ Quản trị viên nhóm hoặc Admin bot mới được dùng lệnh này!', event.threadID, event.messageID);
-  }
-  const targetID = event.messageReply?.senderID || Object.keys(event.mentions || {})[0];
-  if (!targetID) {
-    return api.sendMessage('💡 Hãy reply tin nhắn hoặc @tag người cần kick.', event.threadID, event.messageID);
-  }
-  if (targetID === api.getCurrentUserID()) {
-    return api.sendMessage('😅 Không thể tự kick chính mình!', event.threadID, event.messageID);
-  }
-  return api.removeUserFromGroup(targetID, event.threadID, err => {
-    if (err) {
-      return api.sendMessage('❌ Không thể kick (bot cần quyền Quản trị viên nhóm).', event.threadID, event.messageID);
-    }
-    return api.sendMessage('🚫 Đã kick thành viên khỏi nhóm.', event.threadID);
-  });
-}
-
 async function handleTagAll(api, event, args) {
   if (!(await isGroupOrBotAdmin(api, event))) {
     return api.sendMessage('⛔ Chỉ Quản trị viên nhóm hoặc Admin bot mới được dùng lệnh /all!', event.threadID, event.messageID);
@@ -129,4 +110,4 @@ async function handleAutoReply(api, event, args) {
   return api.sendMessage('💡 Dùng:\n• /autoreply add <từ khóa> | <nội dung>\n• /autoreply del <từ khóa>\n• /autoreply list', event.threadID, event.messageID);
 }
 
-module.exports = { isGroupOrBotAdmin, handleKick, handleTagAll, handleSplitTeam, handleChoose, handleToggleSetting, handleAutoReply };
+module.exports = { isGroupOrBotAdmin, handleTagAll, handleSplitTeam, handleChoose, handleToggleSetting, handleAutoReply };

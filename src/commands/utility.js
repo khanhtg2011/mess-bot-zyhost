@@ -64,7 +64,6 @@ function handleHelp(api, event) {
 • ${p}tomtat : Tóm tắt tin nhắn gần nhất
 
 🛡️ **Quản trị nhóm (Chỉ QTV):**
-• ${p}kick / ${p}ban : Kick thành viên (reply hoặc @tag)
 • ${p}all [tin] : Tag tất cả thành viên
 • ${p}welcome on/off : Bật/tắt chào mừng
 • ${p}antispam on/off : Bật/tắt chống spam
