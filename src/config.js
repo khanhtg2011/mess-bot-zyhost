@@ -67,6 +67,7 @@ module.exports = {
   FB_EMAIL: (process.env.FB_EMAIL || '').trim(),
   FB_PASSWORD: process.env.FB_PASSWORD || '',
   FB_2FA_SECRET: (process.env.FB_2FA_SECRET || '').replace(/\s+/g, '').trim(),
+  MODEL_API_KEY: (process.env.MODEL_API_KEY || '').trim(),
   GEMINI_API_KEYS,
   GEMINI_MODEL: process.env.GEMINI_MODEL || 'gemini-2.5-flash',
   GROQ_API_KEY: (process.env.GROQ_API_KEY || '').trim(),

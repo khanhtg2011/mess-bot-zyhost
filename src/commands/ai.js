@@ -45,6 +45,46 @@ async function callOpenAICompatible(baseUrl, apiKey, model, textPrompt) {
   return text.trim();
 }
 
+const META_SYSTEM_PROMPT = 'Bạn là trợ lý Messenger, trả lời ngắn gọn bằng tiếng Việt, thân thiện, tối đa 3-4 câu.';
+
+async function callModelAPI(userText, history = []) {
+  const apiKey = (process.env.MODEL_API_KEY || '').trim();
+  if (!apiKey) {
+    return 'Mình đang bận một chút, bạn nhắn lại giúp mình nhé.';
+  }
+
+  const formattedHistory = (history || []).slice(-10).map(m => {
+    if (m.role && m.content) return { role: m.role, content: m.content };
+    return { role: 'user', content: `${m.senderName || 'User'}: ${m.body || ''}` };
+  });
+
+  try {
+    const res = await axios.post(
+      'https://api.meta.ai/v1/chat/completions',
+      {
+        model: 'muse-spark-1.3',
+        messages: [
+          { role: 'system', content: META_SYSTEM_PROMPT },
+          ...formattedHistory,
+          { role: 'user', content: userText },
+        ],
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        timeout: 10000,
+      }
+    );
+    const reply = res.data?.choices?.[0]?.message?.content;
+    return reply ? reply.trim() : 'Mình đang bận một chút, bạn nhắn lại giúp mình nhé.';
+  } catch (err) {
+    console.error('[callModelAPI Error]', err.response?.data || err.message);
+    return 'Mình đang bận một chút, bạn nhắn lại giúp mình nhé.';
+  }
+}
+
 async function callAI(parts, hasImage = false) {
   const errors = [];
 
@@ -138,4 +178,4 @@ async function handleSummary(api, event, messageHistory) {
   }
 }
 
-module.exports = { handleAI, handleSummary };
+module.exports = { callModelAPI, handleAI, handleSummary };
