@@ -146,20 +146,13 @@ let stopListener = null;
 
 function isLogoutError(err) {
   const msg = String(err?.error || err?.message || err || '').toLowerCase();
-  return (
-    msg.includes('not logged in') ||
-    msg.includes('login') ||
-    msg.includes('session') ||
-    msg.includes('unauthorized') ||
-    msg.includes('mqtt') ||
-    msg.includes('connection refused')
-  );
+  return msg.includes('not logged in') || msg.includes('unauthorized');
 }
 
 function scheduleReconnect(reason) {
   if (isReconnecting) return;
   isReconnecting = true;
-  console.warn(`⚠️ Phát hiện mất phiên / đăng xuất (${reason}). Tự động đăng nhập lại sau 10 giây...`);
+  console.warn(`⚠️ Phát hiện mất phiên (${reason}). Tự động đăng nhập lại sau 30 giây...`);
   if (typeof stopListener === 'function') {
     try { stopListener(); } catch {}
     stopListener = null;
@@ -167,7 +160,7 @@ function scheduleReconnect(reason) {
   setTimeout(() => {
     isReconnecting = false;
     startBot();
-  }, 10000);
+  }, 30000);
 }
 
 function startBot() {
@@ -195,7 +188,7 @@ function startBot() {
     api.setOptions({
       listenEvents: true,
       selfListen: false,
-      forceLogin: true,
+      forceLogin: false,
       logLevel: 'silent',
     });
 
